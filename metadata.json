@@ -1,0 +1,6 @@
+{
+  "name": "Digital Print - QR to Cloud Print Shop",
+  "description": "Automated QR-to-print application for local print shops with UPI payments, Firestore queue, order tracking, admin dashboard, and Windows Print Agent.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

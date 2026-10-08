@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "Shop": {
+      "title": "Shop",
+      "description": "Configuration and branding profile for a print shop.",
+      "type": "object",
+      "properties": {
+        "shopId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "address": { "type": "string", "maxLength": 255 },
+        "upiId": { "type": "string", "maxLength": 100 },
+        "qrImageUrl": { "type": "string", "maxLength": 500 },
+        "maxFileSizeMb": { "type": "number" },
+        "fileRetentionHours": { "type": "number" },
+        "paymentMode": { "type": "string", "enum": ["test", "upi_qr", "merchant"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["shopId", "name", "phone", "upiId", "paymentMode"]
+    },
+    "PricingConfig": {
+      "title": "PricingConfig",
+      "description": "Per-page and service pricing rules configured by shop admin.",
+      "type": "object",
+      "properties": {
+        "shopId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "a4BwSingle": { "type": "number" },
+        "a4BwDouble": { "type": "number" },
+        "a4ColorSingle": { "type": "number" },
+        "a4ColorDouble": { "type": "number" },
+        "a3BwSingle": { "type": "number" },
+        "a3BwDouble": { "type": "number" },
+        "a3ColorSingle": { "type": "number" },
+        "a3ColorDouble": { "type": "number" },
+        "photoPrint": { "type": "number" },
+        "idPhoto": { "type": "number" },
+        "resumePrint": { "type": "number" },
+        "scanPerPage": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["shopId", "a4BwSingle", "a4BwDouble", "a4ColorSingle", "a4ColorDouble", "a3BwSingle", "a3BwDouble", "a3ColorSingle", "a3ColorDouble"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer print order record.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderNumber": { "type": "string", "maxLength": 32 },
+        "shopId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerPhone": { "type": "string", "maxLength": 20 },
+        "fileName": { "type": "string", "maxLength": 255 },
+        "storagePath": { "type": "string", "maxLength": 500 },
+        "fileSize": { "type": "number" },
+        "fileType": { "type": "string", "maxLength": 50 },
+        "pageCount": { "type": "number" },
+        "paperSize": { "type": "string", "enum": ["A4", "A3"] },
+        "printType": { "type": "string", "enum": ["BW", "COLOR"] },
+        "duplex": { "type": "string", "enum": ["SINGLE", "DOUBLE"] },
+        "copies": { "type": "number" },
+        "orientation": { "type": "string", "enum": ["PORTRAIT", "LANDSCAPE"] },
+        "unitPrice": { "type": "number" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "paymentStatus": { "type": "string", "enum": ["PENDING", "CLAIMED", "VERIFIED", "FAILED", "EXPIRED", "REFUNDED"] },
+        "paymentClaimedAt": { "type": "string", "format": "date-time" },
+        "paymentVerifiedAt": { "type": "string", "format": "date-time" },
+        "paymentVerifiedBy": { "type": "string", "maxLength": 100 },
+        "verificationReason": { "type": "string", "maxLength": 255 },
+        "printStatus": { "type": "string", "enum": ["WAITING_FOR_PAYMENT", "QUEUED", "DOWNLOADING", "PRINTING", "COMPLETED", "FAILED", "CANCELLED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "orderNumber", "shopId", "customerName", "customerPhone", "fileName", "pageCount", "paperSize", "printType", "duplex", "copies", "amount", "paymentStatus", "printStatus", "createdAt"]
+    },
+    "PrintJob": {
+      "title": "PrintJob",
+      "description": "Active or completed job in the shop print queue consumed by Print Agent.",
+      "type": "object",
+      "properties": {
+        "jobId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderNumber": { "type": "string", "maxLength": 32 },
+        "shopId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": { "type": "string", "enum": ["QUEUED", "CLAIMED", "DOWNLOADING", "PRINTING", "COMPLETED", "FAILED", "CANCELLED"] },
+        "printerId": { "type": "string", "maxLength": 64 },
+        "windowsPrinterName": { "type": "string", "maxLength": 128 },
+        "claimedByAgentId": { "type": "string", "maxLength": 128 },
+        "claimedAt": { "type": "string", "format": "date-time" },
+        "downloadUrl": { "type": "string", "maxLength": 500 },
+        "fileName": { "type": "string", "maxLength": 255 },
+        "pageCount": { "type": "number" },
+        "paperSize": { "type": "string", "enum": ["A4", "A3"] },
+        "printType": { "type": "string", "enum": ["BW", "COLOR"] },
+        "duplex": { "type": "string", "enum": ["SINGLE", "DOUBLE"] },
+        "copies": { "type": "number" },
+        "orientation": { "type": "string", "enum": ["PORTRAIT", "LANDSCAPE"] },
+        "attempts": { "type": "number" },
+        "maxAttempts": { "type": "number" },
+        "errorMessage": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["jobId", "orderId", "orderNumber", "shopId", "status", "attempts", "createdAt"]
+    },
+    "Printer": {
+      "title": "Printer",
+      "description": "Hardware printer discovered or registered for the shop.",
+      "type": "object",
+      "properties": {
+        "printerId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "shopId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "windowsPrinterName": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["ONLINE", "OFFLINE", "PRINTING", "ERROR"] },
+        "isDefault": { "type": "boolean" },
+        "supportsColor": { "type": "boolean" },
+        "supportsA3": { "type": "boolean" },
+        "supportsDuplex": { "type": "boolean" },
+        "lastHeartbeat": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["printerId", "shopId", "name", "windowsPrinterName", "status", "isDefault"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and administrative audit trail.",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "shopId": { "type": "string", "maxLength": 64 },
+        "adminId": { "type": "string", "maxLength": 128 },
+        "adminEmail": { "type": "string", "maxLength": 128 },
+        "action": { "type": "string", "maxLength": 100 },
+        "orderId": { "type": "string", "maxLength": 64 },
+        "oldValue": { "type": "string", "maxLength": 500 },
+        "newValue": { "type": "string", "maxLength": 500 },
+        "reason": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["logId", "shopId", "adminId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/shops/{shopId}": {
+      "schema": { "$ref": "#/entities/Shop" },
+      "description": "Print shop profile and settings"
+    },
+    "/pricing/{shopId}": {
+      "schema": { "$ref": "#/entities/PricingConfig" },
+      "description": "Pricing configuration per shop"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer print orders"
+    },
+    "/printJobs/{jobId}": {
+      "schema": { "$ref": "#/entities/PrintJob" },
+      "description": "Print queue jobs for Windows Print Agent"
+    },
+    "/printers/{printerId}": {
+      "schema": { "$ref": "#/entities/Printer" },
+      "description": "Printers registered by shop and print agent"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable administrative audit log events"
+    }
+  }
+}

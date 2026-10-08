@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Customer upload directory: /uploads/{shopId}/{orderId}/{fileName}
+    match /uploads/{shopId}/{orderId}/{fileName} {
+      // Allow anonymous or customer upload with strict size and type check
+      allow write: if request.resource.size <= 50 * 1024 * 1024 // 50 MB max
+                   && (request.resource.contentType.matches('application/pdf')
+                       || request.resource.contentType.matches('image/jpeg')
+                       || request.resource.contentType.matches('image/png'));
+
+      // Customer files are NOT publicly accessible
+      // Read access requires authenticated admin or backend service
+      allow read: if request.auth != null;
+    }
+  }
+}

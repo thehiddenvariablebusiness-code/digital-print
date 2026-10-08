@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'thehiddenvariable.business@gmail.com'
+      );
+    }
+
+    // Shops Collection
+    match /shops/{shopId} {
+      allow read: if isValidId(shopId);
+      allow write: if isValidId(shopId) && isAdmin();
+    }
+
+    // Pricing Collection
+    match /pricing/{shopId} {
+      allow read: if isValidId(shopId);
+      allow write: if isValidId(shopId) && isAdmin();
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      // Admin can read all orders
+      // Public customer read allowed ONLY if specific doc accessed with valid ID (for tracking / checkout)
+      allow get: if isValidId(orderId);
+      allow list: if isAdmin();
+
+      // Customer creation: must follow initial state invariants
+      allow create: if isValidId(orderId) &&
+        incoming().orderId == orderId &&
+        incoming().paymentStatus == 'PENDING' &&
+        incoming().printStatus == 'WAITING_FOR_PAYMENT' &&
+        incoming().amount is number && incoming().amount > 0 &&
+        incoming().customerName is string && incoming().customerName.size() <= 100 &&
+        incoming().customerPhone is string && incoming().customerPhone.size() <= 20;
+
+      // Updating order:
+      // Customer can ONLY mark payment as 'CLAIMED' (when clicking "I HAVE PAID")
+      // Only Admin or verified server backend can mark payment as 'VERIFIED' or update printStatus
+      allow update: if isValidId(orderId) && (
+        isAdmin() ||
+        (
+          existing().paymentStatus == 'PENDING' &&
+          incoming().paymentStatus == 'CLAIMED' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['paymentStatus', 'paymentClaimedAt', 'updatedAt'])
+        )
+      );
+
+      allow delete: if isValidId(orderId) && isAdmin();
+    }
+
+    // Print Jobs Collection
+    match /printJobs/{jobId} {
+      allow get: if isValidId(jobId);
+      // List and manage restricted to Admin & Authorized Agent
+      allow list: if isAdmin();
+      allow create, delete: if isValidId(jobId) && isAdmin();
+      // Status update: Admin can update, or agent updating claim/progress
+      allow update: if isValidId(jobId) && (
+        isAdmin() ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'claimedByAgentId', 'claimedAt', 'startedAt', 'completedAt', 'attempts', 'errorMessage'])
+      );
+    }
+
+    // Printers Collection
+    match /printers/{printerId} {
+      allow read: if isValidId(printerId);
+      allow write: if isValidId(printerId) && isAdmin();
+    }
+
+    // Audit Logs Collection (Append-only by Admin)
+    match /auditLogs/{logId} {
+      allow read: if isValidId(logId) && isAdmin();
+      allow create: if isValidId(logId) && isAdmin();
+      allow update, delete: if false; // Immutable audit log
+    }
+  }
+}
